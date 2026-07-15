@@ -1,3 +1,7 @@
+import { auth, db } from "./firebase-config.js";
+
+console.log("Firebase połączony:", auth.app.options.projectId);
+
 (() => {
   "use strict";
 
