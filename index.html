@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5c400" />
+  <meta name="description" content="Rezerwacja przejazdów Taxi Andrzej Pełka" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Taxi Andrzej Pełka</title>
+</head>
+<body>
+  <div id="appShell">
+    <header class="app-header">
+      <div class="brand-wrap">
+        <div id="brandMark" class="brand-mark">TAXI</div>
+        <div>
+          <h1 id="companyNameHeader">Taxi Andrzej Pełka</h1>
+          <p id="companySloganHeader">Taxi Tomaszów Mazowiecki i okolice</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="connectionBadge" class="badge">Online</span>
+        <button id="installBtn" class="btn btn-secondary hidden" type="button">Zainstaluj</button>
+      </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Główna nawigacja">
+      <button class="nav-btn active" data-view="clientView">Klient</button>
+      <button class="nav-btn" data-view="driverView">Kierowca</button>
+      <button class="nav-btn" data-view="companyView">Firma</button>
+    </nav>
+
+    <main>
+      <section id="clientView" class="view active-view">
+        <div class="hero card">
+          <div>
+            <span class="eyebrow">Szybka rezerwacja</span>
+            <h2 id="heroTitle">Zamów taxi w Tomaszowie Mazowieckim</h2>
+            <p id="heroDescription">Wyślij zgłoszenie. Pierwszy dostępny kierowca potwierdzi kurs.</p>
+          </div>
+          <a id="callNowBtn" class="btn btn-dark" href="tel:+48000000000">Zadzwoń teraz</a>
+        </div>
+
+        <div class="grid two-columns">
+          <form id="bookingForm" class="card form-card">
+            <div class="section-title">
+              <div>
+                <span class="eyebrow">Nowe zgłoszenie</span>
+                <h2>Zamów przejazd</h2>
+              </div>
+            </div>
+
+            <div class="segmented" role="group" aria-label="Termin przejazdu">
+              <button class="segment active" type="button" data-booking-type="now">Taxi teraz</button>
+              <button class="segment" type="button" data-booking-type="scheduled">Rezerwacja</button>
+            </div>
+
+            <input id="bookingType" name="bookingType" type="hidden" value="now" />
+
+            <div id="scheduledFields" class="grid two-columns hidden">
+              <label>
+                <span>Data</span>
+                <input id="scheduledDate" name="scheduledDate" type="date" />
+              </label>
+              <label>
+                <span>Godzina</span>
+                <input id="scheduledTime" name="scheduledTime" type="time" />
+              </label>
+            </div>
+
+            <label>
+              <span>Adres odbioru *</span>
+              <input name="pickup" required autocomplete="street-address" placeholder="np. Warszawska 10, Tomaszów Mazowiecki" />
+            </label>
+
+            <label>
+              <span>Miejsce docelowe *</span>
+              <input name="destination" required placeholder="np. Spała, Lotnisko Chopina" />
+            </label>
+
+            <div class="grid two-columns">
+              <label>
+                <span>Imię *</span>
+                <input name="customerName" required autocomplete="name" />
+              </label>
+              <label>
+                <span>Telefon *</span>
+                <input name="customerPhone" required inputmode="tel" autocomplete="tel" placeholder="500 000 000" />
+              </label>
+            </div>
+
+            <div class="grid two-columns">
+              <label>
+                <span>Liczba pasażerów</span>
+                <select name="passengers">
+                  <option value="1">1 osoba</option>
+                  <option value="2">2 osoby</option>
+                  <option value="3">3 osoby</option>
+                  <option value="4">4 osoby</option>
+                  <option value="5">5+ osób</option>
+                </select>
+              </label>
+              <label>
+                <span>Dodatkowe potrzeby</span>
+                <select name="extra">
+                  <option value="">Brak</option>
+                  <option value="luggage">Duży bagaż</option>
+                  <option value="childSeat">Fotelik dziecięcy</option>
+                  <option value="pet">Przewóz zwierzęcia</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              <span>Uwagi</span>
+              <textarea name="notes" rows="3" placeholder="Np. wejście od strony parkingu"></textarea>
+            </label>
+
+            <label class="checkbox-row">
+              <input name="privacy" type="checkbox" required />
+              <span>Wyrażam zgodę na użycie danych do obsługi zgłoszenia.</span>
+            </label>
+
+            <button class="btn btn-primary btn-large" type="submit">Wyślij zgłoszenie</button>
+          </form>
+
+          <aside class="stack">
+            <div id="latestBookingCard" class="card hidden"></div>
+
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Sprawdź status</span>
+                  <h2>Twoja rezerwacja</h2>
+                </div>
+              </div>
+              <form id="lookupForm" class="stack compact">
+                <label>
+                  <span>Kod rezerwacji</span>
+                  <input name="bookingCode" required placeholder="np. TAP-123456" />
+                </label>
+                <label>
+                  <span>Numer telefonu</span>
+                  <input name="phone" required inputmode="tel" />
+                </label>
+                <button class="btn btn-secondary" type="submit">Sprawdź</button>
+              </form>
+              <div id="lookupResult"></div>
+            </div>
+
+            <div class="card info-card">
+              <h3>Jak to działa?</h3>
+              <ol>
+                <li>Wysyłasz zgłoszenie.</li>
+                <li>Wszyscy dostępni kierowcy firmy je widzą.</li>
+                <li>Pierwszy kierowca akceptuje kurs.</li>
+                <li>Otrzymujesz potwierdzenie i dane samochodu.</li>
+              </ol>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="driverView" class="view">
+        <div class="grid dashboard-grid">
+          <aside class="card driver-sidebar">
+            <span class="eyebrow">Panel kierowcy</span>
+            <h2>Rozpocznij zmianę</h2>
+
+            <label>
+              <span>Kierowca</span>
+              <select id="driverSelect"></select>
+            </label>
+
+            <label>
+              <span>Aktywny samochód</span>
+              <select id="vehicleSelect"></select>
+            </label>
+
+            <label class="switch-row">
+              <span>
+                <strong>Dostępność</strong>
+                <small id="availabilityText">Niedostępny</small>
+              </span>
+              <input id="availabilityToggle" type="checkbox" role="switch" />
+            </label>
+
+            <div id="driverSummary" class="mini-stats"></div>
+          </aside>
+
+          <div class="stack">
+            <div id="driverNotificationsCard" class="card hidden">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Powiadomienia</span>
+                  <h2>Informacje dla kierowcy</h2>
+                </div>
+              </div>
+              <div id="driverNotifications" class="cards-list"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Do przyjęcia</span>
+                  <h2>Nowe zgłoszenia</h2>
+                </div>
+                <span id="pendingCount" class="count-pill">0</span>
+              </div>
+              <div id="pendingBookings" class="cards-list"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Twoje kursy</span>
+                  <h2>Aktywne i zaplanowane</h2>
+                </div>
+              </div>
+              <div id="assignedBookings" class="cards-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="companyView" class="view">
+        <div class="grid dashboard-grid">
+          <aside class="card">
+            <span class="eyebrow">White-label</span>
+            <h2>Konfiguracja firmy</h2>
+            <p class="muted">Te dane sterują wyglądem aplikacji klienta.</p>
+
+            <form id="companyForm" class="stack compact">
+              <label>
+                <span>Nazwa firmy</span>
+                <input name="name" required />
+              </label>
+              <label>
+                <span>Slogan</span>
+                <input name="slogan" />
+              </label>
+              <label>
+                <span>Telefon</span>
+                <input name="phone" inputmode="tel" />
+              </label>
+              <label>
+                <span>Obszar działania</span>
+                <input name="serviceArea" />
+              </label>
+              <label>
+                <span>Kolor główny</span>
+                <input name="primaryColor" type="color" />
+              </label>
+              <label>
+                <span>Subdomena / identyfikator</span>
+                <input name="slug" />
+              </label>
+              <button class="btn btn-primary" type="submit">Zapisz konfigurację</button>
+            </form>
+          </aside>
+
+          <div class="stack">
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Zespół</span>
+                  <h2>Kierowcy</h2>
+                </div>
+              </div>
+              <div id="driversList" class="data-list"></div>
+              <form id="addDriverForm" class="inline-form">
+                <input name="name" required placeholder="Imię i nazwisko kierowcy" />
+                <input name="phone" placeholder="Telefon" />
+                <button class="btn btn-secondary" type="submit">Dodaj kierowcę</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <span class="eyebrow">Flota</span>
+                  <h2>Samochody</h2>
+                </div>
+              </div>
+              <div id="vehiclesList" class="data-list"></div>
+              <form id="addVehicleForm" class="inline-form">
+                <input name="label" required placeholder="np. Mercedes E Klasa" />
+                <input name="registration" placeholder="Nr rejestracyjny" />
+                <button class="btn btn-secondary" type="submit">Dodaj samochód</button>
+              </form>
+            </div>
+
+            <div class="card danger-zone">
+              <h3>Dane demonstracyjne</h3>
+              <p class="muted">Reset usuwa wszystkie lokalne rezerwacje i przywraca konfigurację startową.</p>
+              <button id="resetDemoBtn" class="btn btn-danger" type="button">Przywróć dane początkowe</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
