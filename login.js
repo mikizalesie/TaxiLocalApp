@@ -1,9 +1,14 @@
-import { auth } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import {
   signInWithEmailAndPassword,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+import {
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const loginForm = document.querySelector("#loginForm");
 const loginButton = document.querySelector("#loginButton");
@@ -11,43 +16,110 @@ const loginMessage = document.querySelector("#loginMessage");
 
 function showMessage(message, type = "info") {
   const background =
-    type === "success" ? "#dcfce7" :
-    type === "error" ? "#fee2e2" :
-    "#eef2f6";
+    type === "success"
+      ? "#dcfce7"
+      : type === "error"
+        ? "#fee2e2"
+        : "#eef2f6";
 
   const color =
-    type === "success" ? "#15803d" :
-    type === "error" ? "#b91c1c" :
-    "#111827";
+    type === "success"
+      ? "#15803d"
+      : type === "error"
+        ? "#b91c1c"
+        : "#111827";
 
-  loginMessage.innerHTML = `
-    <div style="
-      padding: 14px;
-      border-radius: 12px;
-      background: ${background};
-      color: ${color};
-      font-weight: 700;
-    ">
-      ${message}
-    </div>
-  `;
+  const messageBox = document.createElement("div");
+
+  messageBox.style.padding = "14px";
+  messageBox.style.borderRadius = "12px";
+  messageBox.style.background = background;
+  messageBox.style.color = color;
+  messageBox.style.fontWeight = "700";
+
+  messageBox.textContent = message;
+
+  loginMessage.replaceChildren(messageBox);
+}
+
+function getRoleLabel(role) {
+  const roleLabels = {
+    companyAdmin: "Administrator firmy",
+    driver: "Kierowca",
+    superAdmin: "Administrator platformy"
+  };
+
+  return roleLabels[role] || role;
+}
+
+async function loadUserProfile(user) {
+  try {
+    showMessage("Sprawdzanie uprawnień użytkownika...");
+
+    const userReference = doc(db, "users", user.uid);
+    const userSnapshot = await getDoc(userReference);
+
+    if (!userSnapshot.exists()) {
+      showMessage(
+        "Konto istnieje, ale nie ma profilu w bazie Firestore.",
+        "error"
+      );
+      return;
+    }
+
+    const profile = userSnapshot.data();
+
+    if (profile.active !== true) {
+      showMessage(
+        "Konto użytkownika jest nieaktywne.",
+        "error"
+      );
+      return;
+    }
+
+    const roleLabel = getRoleLabel(profile.role);
+
+    showMessage(
+      `Zalogowano jako ${profile.displayName}. Rola: ${roleLabel}.`,
+      "success"
+    );
+
+    console.log("Profil użytkownika:", {
+      uid: user.uid,
+      role: profile.role,
+      companyId: profile.companyId,
+      active: profile.active
+    });
+  } catch (error) {
+    console.error("Błąd odczytu profilu:", error);
+
+    showMessage(
+      "Zalogowano, ale nie udało się odczytać profilu użytkownika.",
+      "error"
+    );
+  }
 }
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const email = document.querySelector("#loginEmail").value.trim();
-  const password = document.querySelector("#loginPassword").value;
+  const email = document
+    .querySelector("#loginEmail")
+    .value
+    .trim();
+
+  const password = document
+    .querySelector("#loginPassword")
+    .value;
 
   loginButton.disabled = true;
   loginButton.textContent = "Logowanie...";
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-
-    showMessage(
-      "Logowanie zakończone pomyślnie. Konto Firebase działa.",
-      "success"
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
     );
   } catch (error) {
     console.error("Błąd logowania:", error);
@@ -63,7 +135,8 @@ loginForm.addEventListener("submit", async (event) => {
     }
 
     if (error.code === "auth/too-many-requests") {
-      message = "Zbyt wiele prób logowania. Spróbuj ponownie później.";
+      message =
+        "Zbyt wiele prób logowania. Spróbuj ponownie później.";
     }
 
     showMessage(message, "error");
@@ -73,13 +146,10 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     return;
   }
 
-  showMessage(
-    `Zalogowano jako: ${user.email}`,
-    "success"
-  );
+  await loadUserProfile(user);
 });
