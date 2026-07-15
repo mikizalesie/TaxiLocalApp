@@ -2,7 +2,8 @@ import { auth, db } from "./firebase-config.js";
 
 import {
   signInWithEmailAndPassword,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import {
@@ -13,6 +14,7 @@ import {
 const loginForm = document.querySelector("#loginForm");
 const loginButton = document.querySelector("#loginButton");
 const loginMessage = document.querySelector("#loginMessage");
+const logoutButton = document.querySelector("#logoutButton");
 
 function showMessage(message, type = "info") {
   const background =
@@ -84,6 +86,9 @@ async function loadUserProfile(user) {
       "success"
     );
 
+    loginForm.classList.add("hidden");
+logoutButton.classList.remove("hidden");
+
     console.log("Profil użytkownika:", {
       uid: user.uid,
       role: profile.role,
@@ -152,4 +157,23 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await loadUserProfile(user);
+});
+
+logoutButton.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+
+    loginForm.reset();
+    loginForm.classList.remove("hidden");
+    logoutButton.classList.add("hidden");
+
+    showMessage("Wylogowano prawidłowo.");
+  } catch (error) {
+    console.error("Błąd wylogowania:", error);
+
+    showMessage(
+      "Nie udało się wylogować użytkownika.",
+      "error"
+    );
+  }
 });
